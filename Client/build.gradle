@@ -1,0 +1,65 @@
+def urlFile = { url, name ->
+    File file = new File("$buildDir/download/${name}.jar")
+    file.parentFile.mkdirs()
+    if (!file.exists()) {
+        new URL(url).withInputStream { downloadStream ->
+            file.withOutputStream { fileOut ->
+                fileOut << downloadStream
+            }
+        }
+    }
+    files(file.absolutePath)
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.2.RELEASE")
+    }
+}
+
+// Apply the java plugin to add support for Java
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+jar {
+    baseName = 'client_swe'
+    version =  '1.0.0'
+}
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+
+	// you will need at least gradle 4.6 to get this working, this project and its gradle wrapper is configured accordingly
+
+	// spring boot
+    compile("org.springframework.boot:spring-boot-starter-web:2.1.2.RELEASE")
+    testCompile('org.springframework.boot:spring-boot-starter-test:2.1.2.RELEASE')
+
+    // Use JUnit test framework, we support the old 4 and the new 5
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+    testCompile 'org.junit.jupiter:junit-jupiter-params:5.4.0' //for data driven tests
+    
+    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
+    testRuntime 'org.junit.vintage:junit-vintage-engine:5.4.0'
+    
+    // Use LogBack with the slf facade
+    compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.25'
+    compile group: 'ch.qos.logback', name:'logback-classic', version: '1.2.3'
+    compile group: 'ch.qos.logback', name:'logback-core', version: '1.2.3'
+
+    // Network Messages, ensure that you always use the ones suitable for the current semester
+    compile urlFile('https://homepage.univie.ac.at/kristof.boehmer/SE1/Network_Library/Jar/1.0.5.jar', 'swe_messages-1.0.5_SS19')
+}
